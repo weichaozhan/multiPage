@@ -1,0 +1,35 @@
+// 样式脚手架
+
+// 清除浮动
+.clearfix:after{
+  content: "020"; 
+  display: block; 
+  height: 0; 
+  clear: both; 
+  visibility: hidden;  
+}
+
+.clearfix {
+  /* 触发 hasLayout */ 
+  zoom: 1; 
+}
+
+// 定位
+
+// 相对定位
+.pos-rel {
+  position: relative;
+}
+
+// 绝对定位
+.pos-abs {
+  position: absolute;
+}
+
+// 水平垂直居中
+.pos-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
