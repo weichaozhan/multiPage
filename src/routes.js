@@ -33,7 +33,7 @@ const map = {
   1: 'page1.html',
 }
 
-// if (pageType && map[pageType] && location.pathname.split('/').slice(-1)[0] !== map[pageType]) {
-if (pageType && map[pageType]) {
+if (pageType && map[pageType] && location.pathname.split('/').slice(-1)[0] !== map[pageType]) {
+// if (pageType && map[pageType]) {
   location.href = map[pageType] + paramStr
 }

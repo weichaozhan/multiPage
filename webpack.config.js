@@ -37,7 +37,13 @@ for (let item in entries) {
 }
 
 for (let item in templates) {
-  const chunks = ['vendor', item]
+  const chunks = ['vendor', 'common', item]
+
+  // 开发环境为所有页面添加路由
+  if (environment === 'development') {
+    chunks.push('routes')
+  }
+
   htmlWebpackPluginList.push(new HtmlWebpackPlugin({
     filename: './' + item +'.html',
     template: templates[item],
@@ -116,7 +122,7 @@ const webpackConfig = {
       template: './src/index.html',
       favicon: '',
       hash: true,
-      chunks: ['vendor', 'routes']
+      chunks: ['common', 'routes']
     }),
     extractCSS,
     extractLESS,
@@ -124,7 +130,7 @@ const webpackConfig = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
-      names: ['vendor'], // 指定公共 bundle 的名称。
+      names: ['common'], // 指定公共 bundle 的名称。
       minChunks: Infinity
     }),
     // new UglifyJSPlugin({

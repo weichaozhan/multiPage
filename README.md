@@ -66,6 +66,8 @@ npm run mock   启动本地后端 mock 数据服务
 
 
 ## 页面访问
+  注意：开发环境可直接在当前页面修改 typeCode 访其他问页面，生产和测试范文其他页面必须在 index.html 下修改 typeCode  
+
   e.g
   
     /index.html?typeCode=${code}
