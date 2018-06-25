@@ -143,7 +143,16 @@ if (environment === 'development') {
     },
     {
       test: /\.less$/,
-      use: ['style-loader', 'css-loader', 'less-loader']
+      use: ['style-loader', 'css-loader', 'less-loader', {
+        loader: 'style-resources-loader',
+        options: {
+          patterns: [
+            path.resolve(__dirname, './src/public/style/reset.less'),
+            path.resolve(__dirname, './src/public/style/scaffold.less'),
+            path.resolve(__dirname, './src/public/style/variable.less'),
+          ]
+        }
+      }]
     }
   ])
 } else {
