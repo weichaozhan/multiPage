@@ -20,8 +20,8 @@ const extractLESS = new ExtractTextWebpackPlugin({
 
 //webpack-hot-middleware/client?reload=true 必填，实现刷新浏览器
 const buildHMWArray = (fileArray) => {
-  const array = environment === 'development' ? fileArray.concat(['webpack-hot-middleware/client?noInfo=true&path=/__webpack_hmr&timeout=20000&reload=true']) : fileArray
-  
+  const array = environment === 'development' ? fileArray.concat(['webpack-hot-middleware/client?reload=true&noInfo=true&path=/__webpack_hmr&timeout=20000']) : fileArray
+
   return array
 }
 
@@ -43,12 +43,18 @@ for (let item in templates) {
   if (environment === 'development') {
     chunks.push('routes')
   }
+  if (environment === 'buildProduct') {
+    chunks.splice(1, 0, 'buriedPointStatistics')
+  } else {
+    chunks.splice(1, 0, 'buriedPointStatisticsDev')
+  }
 
   htmlWebpackPluginList.push(new HtmlWebpackPlugin({
-    filename: './' + item +'.html',
+    filename: './' + item + '.html',
     template: templates[item],
     favicon: '',
     hash: true,
+    cache: false,
     chunks: chunks,
     chunksSortMode: 'manual'
   }))
@@ -57,7 +63,9 @@ for (let item in templates) {
 const webpackConfig = {
   entry: Object.assign({
     vendor: ['jquery'],
-    routes: './src/routes.js'
+    routes: './src/routes.js',
+    buriedPointStatistics: './src/public/js/public/buriedPointStatistics.js',
+    buriedPointStatisticsDev: './src/public/js/public/buriedPointStatisticsDev.js'
   }, entries),
   module: {
     rules: [
@@ -68,38 +76,9 @@ const webpackConfig = {
           loader: 'babel-loader'
         }
       },
-      // { 
-      //   // test: /\.(css|less)$/, 
-      //   test: /\.css$/, 
-      //   use: extractCSS.extract({
-      //     fallback: "style-loader",
-      //     use: ["css-loader"]
-      //   })
-      // },
       {
-        test: /\.css$/,
-        use: extractCSS.extract({
-          fallback: 'style-loader',
-          use: [{
-            loader: 'css-loader',
-            options: {
-              minimize: true //css压缩
-            }
-          }]
-        })
+        test: /\.(png|svg|jpg|gif)$/, use: ['url-loader?limit=8192&name=assets/images/[name][hash].[ext]']
       },
-      {
-        test: /\.less$/i,
-        use: extractLESS.extract({
-          use: [{
-            loader: 'css-loader',
-            options: {
-              minimize: true //css压缩
-            }
-          }, 'less-loader']
-        })
-      },
-      { test: /\.(png|svg|jpg|gif)$/, use: ['file-loader?name=assets/images/[name][hash].[ext]'] },
       // { test: /\.(png|svg|jpg|gif)$/, use: ['url-loader?limit=1024&name=assets/images/[name].[ext]'] },
       { test: /\.(woff|woff2|eot|ttf|otf)$/, use: ['file-loader'] },
       {
@@ -108,16 +87,22 @@ const webpackConfig = {
       }
     ],
   },
+  // 别名设置
   resolve: {
     alias: {
-      buriedPointStatistics: environment === 'buildProduct' ? path.resolve(__dirname, 'src/public/js/public/buriedPointStatistics.js') : path.resolve(__dirname, 'src/public/js/public/buriedPointStatisticsDev.js')
+      '@': path.resolve(__dirname, 'src'),
+      publicTools: path.resolve(__dirname, 'src/public/js/public/public.js'),
+      showToast: path.resolve(__dirname, 'src/public/js/public/showToast.js'),
+      loading: path.resolve(__dirname, 'src/public/js/public/loading.js')
     }
   },
   plugins: [
     // new CleanWebpackPlugin(['dist']),
     new webpack.ProvidePlugin({
       jQuery: "jquery",
-      $: "jquery"
+      $: "jquery",
+      BScroll: path.resolve(__dirname, 'src/public/js/lib/scroll/bscroll.min.js'),
+      FastClick: 'fastclick'
     }),
     new HtmlWebpackPlugin({
       // filename: './routes.html',
@@ -130,7 +115,6 @@ const webpackConfig = {
     extractCSS,
     extractLESS,
     new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
       names: ['common', 'vendor', 'load'], // 指定公共 bundle 的名称。
@@ -144,9 +128,52 @@ const webpackConfig = {
   output: {
     filename: './[name][hash].js',
     //__dirname是node.js中的一个全局变量，它指向当前执行脚本所在的目录
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'dist/h5Page'),
     // publicPath: '/'
   }
+}
+
+if (environment === 'development') {
+  webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin())
+  webpackConfig.module.rules = webpackConfig.module.rules.concat([
+    {
+      // test: /\.(css|less)$/, 
+      test: /\.css$/,
+      use: ['style-loader', 'css-loader']
+    },
+    {
+      test: /\.less$/,
+      use: ['style-loader', 'css-loader', 'less-loader']
+    }
+  ])
+} else {
+  // 不是开发环境不进行样式抽离
+  webpackConfig.module.rules = webpackConfig.module.rules.concat([
+    {
+      test: /\.css$/,
+      use: extractCSS.extract({
+        fallback: 'style-loader',
+        use: [{
+          loader: 'css-loader',
+          options: {
+            minimize: true //css压缩
+          }
+        }, 'postcss-loader']
+      })
+    },
+    {
+      test: /\.less$/i,
+      use: extractLESS.extract({
+        fallback: 'style-loader',
+        use: [{
+          loader: 'css-loader',
+          options: {
+            minimize: true //css压缩
+          }
+        }, 'postcss-loader', 'less-loader']
+      })
+    }
+  ])
 }
 
 webpackConfig.plugins = webpackConfig.plugins.concat(htmlWebpackPluginList)

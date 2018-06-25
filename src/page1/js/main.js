@@ -2,7 +2,6 @@ import '../../public/style/reset.less'
 import '../../public/style/scaffold.less'
 import '../../public/style/windowAlert.less'
 
-import 'buriedPointStatistics'
 import {
   request
 } from '../../public/js/public/public'
